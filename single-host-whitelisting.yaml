@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1beta1 # for versions before 1.14 use extensions/v1beta1
+kind: Ingress
+metadata:
+  name: example-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/whitelist-source-range: 192.168.99.2  # whitelisting IP
+spec:
+  rules:
+    - host: qriousbird.com
+      http:
+        paths:
+          - path: /route1              # service 1
+            backend:
+              serviceName: web
+              servicePort: 8081
+          - path: /route2              # service 2
+            backend:
+              serviceName: web
+              servicePort: 8082
+          - path: /                    # service 3
+            backend:
+              serviceName: web
+              servicePort: 8080

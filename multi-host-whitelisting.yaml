@@ -1,0 +1,46 @@
+  apiVersion: networking.k8s.io/v1beta1 # for versions before 1.14 use extensions/v1beta1
+  kind: Ingress
+  metadata:
+    name: example-ingress
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$1
+      nginx.ingress.kubernetes.io/server-snippet: |
+        if ($host ~* "(qriousbird.com)" ){
+           set $allowAccessHost1 T;
+        }
+
+        if ($remote_addr !~* "(192.168.99.1)" ){
+           set $allowAccessHost1 "${allowAccessHost1}T";
+        }
+
+        if ($allowAccessHost1 = TT) {
+           return 403;
+        }
+
+        if ($host ~* "(support.qriousbird.com)" ){
+           set $allowAccessHost2 T;
+        }
+
+        if ($remote_addr !~* "(192.168.99.1)" ){
+           set $allowAccessHost2 "${allowAccessHost2}T";
+        }
+
+        if ($allowAccessHost2 = TT) {
+           return 403;
+        }
+  spec:
+    rules:
+      - host: qriousbird.com
+        http:
+          paths:
+            - path: /                    # service 1
+              backend:
+                serviceName: web
+                servicePort: 8080
+      - host: support.qriousbird.com
+        http:
+          paths:
+            - path: /                    # support host
+              backend:
+                serviceName: support
+                servicePort: 8080
